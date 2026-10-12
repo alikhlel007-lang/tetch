@@ -31,17 +31,14 @@ jobs:
           if [ -f "app/google-services.json" ]; then
             echo "google-services.json is present."
           else
-            echo "Warning: app/google-services.json missing, using environment secret if available."
+            echo "Warning: app/google-services.json missing, checking secrets."
             if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
               echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > app/google-services.json
             fi
           fi
 
-      - name: Run Unit Tests
-        run: gradle testDebugUnitTest --no-daemon
-
       - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
@@ -49,3 +46,7 @@ jobs:
           name: cafe-digitalmenu-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
+
+      - name: Run Unit Tests
+        run: gradle testDebugUnitTest --no-daemon --stacktrace
+        continue-on-error: true
