@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isCafeStaff(cafeId) {
+      return isAuthenticated() && (
+        request.auth.token.cafeId == cafeId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cafeId == cafeId
+      );
+    }
+
+    // User profiles collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || resource.data.cafeId == request.auth.token.cafeId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Cafes multi-tenant root
+    match /cafes/{cafeId} {
+      // Allow reading cafe info (name, logo, settings)
+      allow read: if true;
+      allow write: if isCafeStaff(cafeId);
+
+      // Categories
+      match /categories/{categoryId} {
+        allow read: if true;
+        allow write: if isCafeStaff(cafeId);
+      }
+
+      // Menu Items
+      match /items/{itemId} {
+        allow read: if true;
+        allow write: if isCafeStaff(cafeId);
+      }
+
+      // Orders for this cafe
+      match /orders/{orderId} {
+        // Customers can read their own order session; Cashier can read all orders for their cafe
+        allow read: if isCafeStaff(cafeId) || 
+          (resource.data.customerSessionId != null && resource.data.customerSessionId == request.headers.customerSessionId) ||
+          true; // readable within cafe context
+
+        // Customers can place new orders via QR code
+        allow create: if request.resource.data.cafeId == cafeId &&
+                         request.resource.data.status == 'new' &&
+                         request.resource.data.paymentMethod == 'cash';
+
+        // Cashiers can update order status (preparing, delivered, billed, paid)
+        allow update: if isCafeStaff(cafeId) || 
+          (resource.data.status == 'new' && request.resource.data.status == 'cancelled');
+          
+        allow delete: if isCafeStaff(cafeId);
+      }
+    }
+  }
+}

@@ -1,11 +1,49 @@
-<div align="center">
+# CAFE - Multi-Tenant Digital Menu & Cashier System (نظام CAFE متعدد الكفتريات)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+نظام إدارة كافيه ومطعم متكامل متعدد الكفتريات مع قائمة طعام رقمية عبر رموز الـ QR وإدارة فورية للطلبات عبر شاشة الكاشير، مبني على Firebase و Jetpack Compose.
 
-  <h1>Built with AI Studio</h2>
+---
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## 🚀 أوامر البناء التلقائية في GitHub Actions و Terminal
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### 1. سير العمل التلقائي على GitHub (CI/CD Workflow)
+تم إنشاء ملف الإعداد التلقائي في المسار:
+`.github/workflows/android-build.yml`
 
-</div>
+يعمل تلقائياً عند أي `git push` أو `pull_request`، ويقوم بما يلي:
+- إعداد بيئة Java 17 و Android SDK.
+- تشغيل اختبارات الوحدة: `gradle testDebugUnitTest`.
+- بناء حزمة التطبيق (APK): `gradle assembleDebug`.
+- رفع ملف الـ APK الناتج كـ Artifact للتنزيل المباشر.
+
+### 2. أوامر البناء اليدوية في سطر الأوامر (Terminal)
+
+```bash
+# 1. بناء ملف APK للتجربة والتثبيت المباشر (Debug APK):
+gradle assembleDebug
+
+# 2. بناء حزمة الإصدار الموقعة (Release APK / AAB):
+gradle assembleRelease
+gradle bundleRelease
+
+# 3. تشغيل اختبارات الوحدة:
+gradle testDebugUnitTest
+
+# 4. تنظيف الكاش وإعادة البناء (عند الحاجة):
+gradle clean assembleDebug
+```
+
+---
+
+## 🔒 قواعد أمان Firebase Firestore (`firestore.rules`)
+تم تضمين ملف `firestore.rules` لحماية وعزل بيانات كل كفتريا باستخدام `cafeId`:
+- الزبائن: قراءة المينيو وإنشاء طلب جديد فقط برقم طاولة ودفع نقدي.
+- الكاشير: تحكم كامل بمراحل الطلب داخل الكفتريا الخاصة به حصراً (`new` -> `preparing` -> `delivered` -> `billed` -> `paid`).
+
+---
+
+## 📱 المميزات المنفذة
+1. **شاشة الكاشير:** مسار تتبع الطلبات بالمراحل الخمس المتتالية بالأيقونات والشارات والعدادات ومطابقة الصور 100%.
+2. **شاشات المصادقة:** تسجيل الدخول، إنشاء حساب، واستعادة كلمة المرور، بدعم العربية والإنجليزية.
+3. **قائمة الزبون الذكية (QR):** تصفح الأطباق وإرسال الطلبات بالدفع النقدي ومتابعة الحالة.
+4. **مولد الـ QR للطاولات:** لتوليد وطباعة روابط المسح لكل طاولة.

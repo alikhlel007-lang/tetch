@@ -1,0 +1,6 @@
+{
+  "name": "CAFE",
+  "description": "نظام CAFE متعدد الكفتريات لقائمة الطعام الذكية عبر QR وإدارة طلبات الكاشير",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
